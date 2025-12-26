@@ -1,0 +1,110 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build for macOS (arm64)
+        run: swift build -c release --arch arm64
+
+      - name: Build for macOS (x86_64)
+        run: swift build -c release --arch x86_64
+
+      - name: Create universal binary
+        run: |
+          mkdir -p dist
+          lipo -create \
+            .build/arm64-apple-macosx/release/swiftgodotbuilder \
+            .build/x86_64-apple-macosx/release/swiftgodotbuilder \
+            -output dist/swiftgodotbuilder
+          strip dist/swiftgodotbuilder
+
+      - name: Create tarball
+        run: |
+          cd dist
+          tar -czvf swiftgodotbuilder-macos.tar.gz swiftgodotbuilder
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-binary
+          path: dist/swiftgodotbuilder-macos.tar.gz
+
+  build-linux:
+    runs-on: ubuntu-latest
+    container: swift:6.0
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build for Linux
+        run: swift build -c release
+
+      - name: Create tarball
+        run: |
+          mkdir -p dist
+          BIN_PATH=$(swift build -c release --show-bin-path)
+          cp "$BIN_PATH/swiftgodotbuilder" dist/
+          strip dist/swiftgodotbuilder
+          cd dist
+          tar -czvf swiftgodotbuilder-linux-x86_64.tar.gz swiftgodotbuilder
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-binary
+          path: dist/swiftgodotbuilder-linux-x86_64.tar.gz
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: SwiftyLab/setup-swift@v1
+        with:
+          swift-version: "6.0"
+
+      - name: Build for Windows
+        run: swift build -c release
+
+      - name: Create zip
+        run: |
+          New-Item -ItemType Directory -Force -Path dist
+          $BIN_PATH = swift build -c release --show-bin-path
+          Copy-Item "$BIN_PATH\swiftgodotbuilder.exe" dist\
+          Compress-Archive -Path dist\swiftgodotbuilder.exe -DestinationPath dist\swiftgodotbuilder-windows-x86_64.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-binary
+          path: dist/swiftgodotbuilder-windows-x86_64.zip
+
+  release:
+    needs: [build-macos, build-linux, build-windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Generate checksums
+        run: |
+          cd artifacts
+          sha256sum macos-binary/* linux-binary/* windows-binary/* > checksums.txt
+          cat checksums.txt
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/macos-binary/swiftgodotbuilder-macos.tar.gz
+            artifacts/linux-binary/swiftgodotbuilder-linux-x86_64.tar.gz
+            artifacts/windows-binary/swiftgodotbuilder-windows-x86_64.zip
+            artifacts/checksums.txt
+          generate_release_notes: true
