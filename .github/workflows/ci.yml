@@ -30,13 +30,18 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Windows SDK 10.0.20348.0
-        uses: fbactions/setup-winsdk@v2
-        with:
-          winsdk-build-version: 20348
-      - uses: SwiftyLab/setup-swift@v1
-        with:
-          swift-version: "5.10"
+      - name: Install Visual Studio components
+        run: |
+          winget install --id Microsoft.VisualStudio.2022.Community --exact --force --custom "--add Microsoft.VisualStudio.Component.Windows11SDK.22621 --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64" --accept-source-agreements --accept-package-agreements
+      - name: Install Swift
+        run: winget install --id Swift.Toolchain -e --accept-source-agreements --accept-package-agreements
+      - name: Setup Swift environment
+        run: |
+          $toolchain = Get-ChildItem "C:\Program Files\Swift\Toolchains" | Select-Object -First 1
+          $platform = Get-ChildItem "C:\Program Files\Swift\Platforms" | Select-Object -First 1
+          $env:Path = "$($toolchain.FullName)\usr\bin;$($platform.FullName)\Windows.platform\Developer\SDKs\Windows.sdk\usr\bin;$env:Path"
+          echo "PATH=$env:Path" >> $env:GITHUB_ENV
+          swift --version
       - name: Build
         run: swift build
       - name: Build Release
