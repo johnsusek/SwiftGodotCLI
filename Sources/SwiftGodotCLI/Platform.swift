@@ -16,7 +16,7 @@ let libraryExtension = "dylib"
 
 func runCommand(_ arguments: [String]) throws -> Int32 {
   let process = Process()
-  process.executableURL = URL(filePath: envExecutable)
+  process.executableURL = URL(fileURLWithPath: envExecutable)
   process.arguments = envPrefix + arguments
   process.standardOutput = FileHandle.nullDevice
   process.standardError = FileHandle.nullDevice

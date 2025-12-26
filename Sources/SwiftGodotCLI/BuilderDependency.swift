@@ -9,8 +9,8 @@ enum BuilderDependency {
       return .local(override)
     }
     if let env = ProcessInfo.processInfo.environment["SWIFTGODOTCLI_BUILDER_PATH"] {
-      let url = URL(filePath: env, relativeTo: baseDirectory).standardizedFileURL
-      if FileManager.default.fileExists(atPath: url.appending(path: "Package.swift").path) {
+      let url = URL(fileURLWithPath: env, relativeTo: baseDirectory).standardizedFileURL
+      if FileManager.default.fileExists(atPath: url.appendingPathComponent("Package.swift").path) {
         return .local(url)
       }
     }

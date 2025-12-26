@@ -76,7 +76,7 @@ struct SwiftGodotBuilderCLI: ParsableCommand {
   }
 
   func run() throws {
-    let baseDirectory = URL(filePath: FileManager.default.currentDirectoryPath, directoryHint: .isDirectory)
+    let baseDirectory = URL(fileURLWithPath: FileManager.default.currentDirectoryPath, isDirectory: true)
     let cacheRoot = cache.map { CLIConfig.absoluteURL(for: $0, baseDirectory: baseDirectory) }
       ?? CLIConfig.defaultCacheRoot()
 

@@ -11,9 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Select Xcode 16
-        run: sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
-
       - name: Verify Swift version
         run: swift --version
 
@@ -137,7 +134,7 @@ jobs:
 
   build-linux:
     runs-on: ubuntu-latest
-    container: swift:6.0
+    container: swift:5.10
     steps:
       - uses: actions/checkout@v4
 
@@ -165,7 +162,10 @@ jobs:
 
       - uses: SwiftyLab/setup-swift@v1
         with:
-          swift-version: "6.0"
+          swift-version: "5.10"
+
+      - name: Verify Swift version
+        run: swift --version
 
       - name: Build for Windows
         run: swift build -c release

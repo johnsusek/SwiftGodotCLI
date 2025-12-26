@@ -12,25 +12,25 @@ struct PlaygroundScaffold {
   }
 
   private var packageDirectory: URL {
-    config.workspaceDirectory.appending(path: "SwiftPackage", directoryHint: .isDirectory)
+    config.workspaceDirectory.appendingPathComponent("SwiftPackage", isDirectory: true)
   }
 
   private var sourcesDirectory: URL {
     packageDirectory
-      .appending(path: "Sources", directoryHint: .isDirectory)
-      .appending(path: targetName, directoryHint: .isDirectory)
+      .appendingPathComponent("Sources", isDirectory: true)
+      .appendingPathComponent(targetName, isDirectory: true)
   }
 
   private var godotDirectory: URL {
-    config.workspaceDirectory.appending(path: "GodotProject", directoryHint: .isDirectory)
+    config.workspaceDirectory.appendingPathComponent("GodotProject", isDirectory: true)
   }
 
   private var godotBinDirectory: URL {
-    godotDirectory.appending(path: "bin", directoryHint: .isDirectory)
+    godotDirectory.appendingPathComponent("bin", isDirectory: true)
   }
 
   private var godotHiddenDirectory: URL {
-    godotDirectory.appending(path: ".godot", directoryHint: .isDirectory)
+    godotDirectory.appendingPathComponent(".godot", isDirectory: true)
   }
 
   var godotProjectPath: URL { godotDirectory }
@@ -61,7 +61,7 @@ struct PlaygroundScaffold {
       throw CLIError("Unable to determine Swift build output path")
     }
 
-    let binDirectory = URL(filePath: binPathString, directoryHint: .isDirectory)
+    let binDirectory = URL(fileURLWithPath: binPathString, isDirectory: true)
     try syncLibraries(binDirectory: binDirectory)
     if !config.assetDirectories.isEmpty {
       try runHeadlessImport()
@@ -72,7 +72,7 @@ struct PlaygroundScaffold {
     logger.info("Launching Godot from \(godotDirectory.path)...")
 
     let process = Process()
-    process.executableURL = URL(filePath: "/usr/bin/env")
+    process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
     process.arguments = [config.godotCommand, "--path", godotDirectory.path, "--disable-crash-handler"]
     process.currentDirectoryURL = config.workspaceDirectory
     process.standardOutput = FileHandle.standardOutput
@@ -108,7 +108,7 @@ struct PlaygroundScaffold {
   }
 
   private func writeSwiftSources() throws {
-    let destination = sourcesDirectory.appending(path: config.viewFile.lastPathComponent)
+    let destination = sourcesDirectory.appendingPathComponent( config.viewFile.lastPathComponent)
     try writeIfChanged(config.viewSource, to: destination)
 
     for includeDir in config.includeDirectories {
@@ -147,7 +147,7 @@ struct PlaygroundScaffold {
       """
     }
 
-    let entryURL = sourcesDirectory.appending(path: "PlaygroundRoot.swift")
+    let entryURL = sourcesDirectory.appendingPathComponent( "PlaygroundRoot.swift")
     try writeIfChanged(entryPoint, to: entryURL)
   }
 
@@ -162,7 +162,7 @@ struct PlaygroundScaffold {
   private func copySwiftFiles(from directory: URL) throws {
     let contents = try fileManager.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)
     for file in contents where file.pathExtension == "swift" {
-      let destination = sourcesDirectory.appending(path: file.lastPathComponent)
+      let destination = sourcesDirectory.appendingPathComponent( file.lastPathComponent)
       guard !fileManager.fileExists(atPath: destination.path) else {
         logger.debug("Skipping \(file.lastPathComponent) (already exists)")
         continue
@@ -200,12 +200,12 @@ struct PlaygroundScaffold {
     )
     """
 
-    let packageURL = packageDirectory.appending(path: "Package.swift")
+    let packageURL = packageDirectory.appendingPathComponent( "Package.swift")
     try writeIfChanged(manifest, to: packageURL)
   }
 
   private func writeGodotFiles() throws {
-    let projectGodotPath = godotDirectory.appending(path: "project.godot")
+    let projectGodotPath = godotDirectory.appendingPathComponent( "project.godot")
 
     if let customProject = config.customProjectGodot {
       if fileManager.fileExists(atPath: projectGodotPath.path) {
@@ -242,7 +242,7 @@ struct PlaygroundScaffold {
     """
 
     try scene.write(
-      to: godotDirectory.appending(path: "main.tscn"),
+      to: godotDirectory.appendingPathComponent( "main.tscn"),
       atomically: true,
       encoding: .utf8
     )
@@ -270,14 +270,14 @@ struct PlaygroundScaffold {
     """
 
     try extensionFile.write(
-      to: godotDirectory.appending(path: "\(targetName).gdextension"),
+      to: godotDirectory.appendingPathComponent( "\(targetName).gdextension"),
       atomically: true,
       encoding: .utf8
     )
 
     let extensionList = "res://\(targetName).gdextension\n"
     try extensionList.write(
-      to: godotHiddenDirectory.appending(path: "extension_list.cfg"),
+      to: godotHiddenDirectory.appendingPathComponent( "extension_list.cfg"),
       atomically: true,
       encoding: .utf8
     )
@@ -286,7 +286,7 @@ struct PlaygroundScaffold {
   private func linkAssetDirectories() throws {
     guard !config.assetDirectories.isEmpty else { return }
     for dir in config.assetDirectories {
-      let destination = godotDirectory.appending(path: dir.lastPathComponent)
+      let destination = godotDirectory.appendingPathComponent( dir.lastPathComponent)
       if fileManager.fileExists(atPath: destination.path) {
         try fileManager.removeItem(at: destination)
       }
@@ -315,7 +315,7 @@ struct PlaygroundScaffold {
     var copied: [URL] = []
 
     for lib in libs {
-      let destination = godotBinDirectory.appending(path: lib.lastPathComponent)
+      let destination = godotBinDirectory.appendingPathComponent( lib.lastPathComponent)
       try fileManager.copyItem(at: lib, to: destination)
       copied.append(destination)
     }
@@ -338,7 +338,7 @@ struct PlaygroundScaffold {
   }
 
   private func runHeadlessImport() throws {
-    let checksumFile = config.workspaceDirectory.appending(path: ".asset-checksum")
+    let checksumFile = config.workspaceDirectory.appendingPathComponent( ".asset-checksum")
     let currentChecksum = computeAssetChecksum()
 
     if let cachedChecksum = try? String(contentsOf: checksumFile, encoding: .utf8),
@@ -395,7 +395,7 @@ struct PlaygroundScaffold {
   ) throws -> String? {
     logger.debug("Running: \(arguments.joined(separator: " ")) (cwd: \(directory.path))")
     let process = Process()
-    process.executableURL = URL(filePath: envExecutable)
+    process.executableURL = URL(fileURLWithPath: envExecutable)
     process.arguments = envPrefix + arguments
     process.currentDirectoryURL = directory
     let outputPipe: Pipe? = captureOutput ? Pipe() : nil

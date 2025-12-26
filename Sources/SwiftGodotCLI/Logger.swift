@@ -15,6 +15,6 @@ struct Logger {
   }
 
   func warn(_ message: String) {
-    fputs("warning: \(message)\n", stderr)
+    FileHandle.standardError.write(Data("warning: \(message)\n".utf8))
   }
 }
