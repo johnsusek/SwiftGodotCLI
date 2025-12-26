@@ -157,23 +157,20 @@ jobs:
 
   build-windows:
     runs-on: windows-latest
+    env:
+      # Force SDK 22621 (pre-installed) instead of 26100 (has cyclic dependency bug)
+      WindowsSDKVersion: 10.0.22621.0\
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Visual Studio components
-        run: |
-          winget install --id Microsoft.VisualStudio.2022.Community --exact --force --custom "--add Microsoft.VisualStudio.Component.Windows11SDK.22621 --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64" --accept-source-agreements --accept-package-agreements
+      - name: Setup Swift
+        uses: compnerd/gha-setup-swift@main
+        with:
+          branch: swift-6.1-release
+          tag: 6.1-RELEASE
 
-      - name: Install Swift
-        run: winget install --id Swift.Toolchain -e --accept-source-agreements --accept-package-agreements
-
-      - name: Setup Swift environment
-        run: |
-          $toolchain = Get-ChildItem "C:\Program Files\Swift\Toolchains" | Select-Object -First 1
-          $platform = Get-ChildItem "C:\Program Files\Swift\Platforms" | Select-Object -First 1
-          $env:Path = "$($toolchain.FullName)\usr\bin;$($platform.FullName)\Windows.platform\Developer\SDKs\Windows.sdk\usr\bin;$env:Path"
-          echo "PATH=$env:Path" >> $env:GITHUB_ENV
-          swift --version
+      - name: Verify Swift version
+        run: swift --version
 
       - name: Build for Windows
         run: swift build -c release
