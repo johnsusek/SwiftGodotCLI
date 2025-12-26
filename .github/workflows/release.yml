@@ -11,6 +11,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Select Xcode 16
+        run: sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
+
+      - name: Verify Swift version
+        run: swift --version
+
       - name: Build for macOS (arm64)
         run: swift build -c release --arch arm64
 
@@ -19,12 +25,105 @@ jobs:
 
       - name: Create universal binary
         run: |
+          echo "Creating universal binary..."
           mkdir -p dist
+          echo "arm64 binary:"
+          ls -lh .build/arm64-apple-macosx/release/swiftgodotbuilder
+          echo "x86_64 binary:"
+          ls -lh .build/x86_64-apple-macosx/release/swiftgodotbuilder
           lipo -create \
             .build/arm64-apple-macosx/release/swiftgodotbuilder \
             .build/x86_64-apple-macosx/release/swiftgodotbuilder \
             -output dist/swiftgodotbuilder
+          echo "Universal binary created:"
+          lipo -info dist/swiftgodotbuilder
+          echo "Stripping binary..."
+          ls -lh dist/swiftgodotbuilder
           strip dist/swiftgodotbuilder
+          echo "Stripped binary:"
+          ls -lh dist/swiftgodotbuilder
+
+      - name: Import certificate
+        env:
+          CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
+          PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          echo "Validating secrets..."
+          if [ -z "$CERTIFICATE" ]; then
+            echo "::error::APPLE_CERTIFICATE_BASE64 secret is empty"
+            exit 1
+          fi
+          if [ -z "$PASSWORD" ]; then
+            echo "::error::APPLE_CERTIFICATE_PASSWORD secret is empty"
+            exit 1
+          fi
+          echo "Decoding certificate..."
+          echo "$CERTIFICATE" | base64 -d > cert.p12
+          ls -l cert.p12
+          echo "Creating keychain..."
+          security create-keychain -p temp build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p temp build.keychain
+          security set-keychain-settings -t 3600 -u build.keychain
+          echo "Importing certificate..."
+          security import cert.p12 -k build.keychain -P "$PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k temp build.keychain
+          echo "Available signing identities:"
+          security find-identity -v -p codesigning build.keychain
+          rm cert.p12
+          echo "Certificate imported successfully"
+
+      - name: Sign binary
+        env:
+          SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+        run: |
+          echo "Validating signing identity..."
+          if [ -z "$SIGNING_IDENTITY" ]; then
+            echo "::error::APPLE_SIGNING_IDENTITY secret is empty"
+            exit 1
+          fi
+          echo "Signing identity: $SIGNING_IDENTITY"
+          echo "Signing binary..."
+          codesign --force --options runtime --sign "$SIGNING_IDENTITY" --timestamp dist/swiftgodotbuilder
+          echo "Verifying signature..."
+          codesign -vvv --deep --strict dist/swiftgodotbuilder
+          echo "Signature details:"
+          codesign -dvv dist/swiftgodotbuilder
+
+      - name: Notarize binary
+        env:
+          API_KEY: ${{ secrets.APPLE_API_KEY_BASE64 }}
+          API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+        run: |
+          echo "Validating notarization secrets..."
+          if [ -z "$API_KEY" ]; then
+            echo "::error::APPLE_API_KEY_BASE64 secret is empty"
+            exit 1
+          fi
+          if [ -z "$API_KEY_ID" ]; then
+            echo "::error::APPLE_API_KEY_ID secret is empty"
+            exit 1
+          fi
+          if [ -z "$API_ISSUER_ID" ]; then
+            echo "::error::APPLE_API_ISSUER_ID secret is empty"
+            exit 1
+          fi
+          echo "Decoding API key..."
+          echo "$API_KEY" | base64 -d > key.p8
+          ls -l key.p8
+          echo "Creating zip for notarization..."
+          zip -j dist/upload.zip dist/swiftgodotbuilder
+          ls -lh dist/upload.zip
+          echo "Submitting for notarization (this may take a few minutes)..."
+          xcrun notarytool submit dist/upload.zip \
+            --key key.p8 \
+            --key-id "$API_KEY_ID" \
+            --issuer "$API_ISSUER_ID" \
+            --wait \
+            --timeout 30m
+          echo "Notarization complete"
+          rm dist/upload.zip key.p8
 
       - name: Create tarball
         run: |
