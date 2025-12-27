@@ -108,7 +108,7 @@ struct PlaygroundScaffold {
   }
 
   private func writeSwiftSources() throws {
-    let destination = sourcesDirectory.appendingPathComponent( config.viewFile.lastPathComponent)
+    let destination = sourcesDirectory.appendingPathComponent(config.viewFile.lastPathComponent)
     try writeIfChanged(config.viewSource, to: destination)
 
     for includeDir in config.includeDirectories {
@@ -147,7 +147,7 @@ struct PlaygroundScaffold {
       """
     }
 
-    let entryURL = sourcesDirectory.appendingPathComponent( "PlaygroundRoot.swift")
+    let entryURL = sourcesDirectory.appendingPathComponent("PlaygroundRoot.swift")
     try writeIfChanged(entryPoint, to: entryURL)
   }
 
@@ -162,7 +162,7 @@ struct PlaygroundScaffold {
   private func copySwiftFiles(from directory: URL) throws {
     let contents = try fileManager.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)
     for file in contents where file.pathExtension == "swift" {
-      let destination = sourcesDirectory.appendingPathComponent( file.lastPathComponent)
+      let destination = sourcesDirectory.appendingPathComponent(file.lastPathComponent)
       guard !fileManager.fileExists(atPath: destination.path) else {
         logger.debug("Skipping \(file.lastPathComponent) (already exists)")
         continue
@@ -180,6 +180,7 @@ struct PlaygroundScaffold {
 
     let package = Package(
       name: "\(targetName)",
+      platforms: [.macOS(.v14)],
       products: [
         .library(name: "\(targetName)", type: .dynamic, targets: ["\(targetName)"])
       ],
@@ -200,12 +201,12 @@ struct PlaygroundScaffold {
     )
     """
 
-    let packageURL = packageDirectory.appendingPathComponent( "Package.swift")
+    let packageURL = packageDirectory.appendingPathComponent("Package.swift")
     try writeIfChanged(manifest, to: packageURL)
   }
 
   private func writeGodotFiles() throws {
-    let projectGodotPath = godotDirectory.appendingPathComponent( "project.godot")
+    let projectGodotPath = godotDirectory.appendingPathComponent("project.godot")
 
     if let customProject = config.customProjectGodot {
       if fileManager.fileExists(atPath: projectGodotPath.path) {
@@ -242,7 +243,7 @@ struct PlaygroundScaffold {
     """
 
     try scene.write(
-      to: godotDirectory.appendingPathComponent( "main.tscn"),
+      to: godotDirectory.appendingPathComponent("main.tscn"),
       atomically: true,
       encoding: .utf8
     )
@@ -270,14 +271,14 @@ struct PlaygroundScaffold {
     """
 
     try extensionFile.write(
-      to: godotDirectory.appendingPathComponent( "\(targetName).gdextension"),
+      to: godotDirectory.appendingPathComponent("\(targetName).gdextension"),
       atomically: true,
       encoding: .utf8
     )
 
     let extensionList = "res://\(targetName).gdextension\n"
     try extensionList.write(
-      to: godotHiddenDirectory.appendingPathComponent( "extension_list.cfg"),
+      to: godotHiddenDirectory.appendingPathComponent("extension_list.cfg"),
       atomically: true,
       encoding: .utf8
     )
@@ -286,7 +287,7 @@ struct PlaygroundScaffold {
   private func linkAssetDirectories() throws {
     guard !config.assetDirectories.isEmpty else { return }
     for dir in config.assetDirectories {
-      let destination = godotDirectory.appendingPathComponent( dir.lastPathComponent)
+      let destination = godotDirectory.appendingPathComponent(dir.lastPathComponent)
       if fileManager.fileExists(atPath: destination.path) {
         try fileManager.removeItem(at: destination)
       }
@@ -315,7 +316,7 @@ struct PlaygroundScaffold {
     var copied: [URL] = []
 
     for lib in libs {
-      let destination = godotBinDirectory.appendingPathComponent( lib.lastPathComponent)
+      let destination = godotBinDirectory.appendingPathComponent(lib.lastPathComponent)
       try fileManager.copyItem(at: lib, to: destination)
       copied.append(destination)
     }
@@ -338,7 +339,7 @@ struct PlaygroundScaffold {
   }
 
   private func runHeadlessImport() throws {
-    let checksumFile = config.workspaceDirectory.appendingPathComponent( ".asset-checksum")
+    let checksumFile = config.workspaceDirectory.appendingPathComponent(".asset-checksum")
     let currentChecksum = computeAssetChecksum()
 
     if let cachedChecksum = try? String(contentsOf: checksumFile, encoding: .utf8),
