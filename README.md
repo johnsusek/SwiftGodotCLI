@@ -16,6 +16,38 @@ cp .build/release/swiftgodotbuilder /usr/local/bin/
 
 ## Usage
 
+```
+OVERVIEW: Build and run SwiftGodotBuilder GView files
+
+USAGE: swiftgodotbuilder [<options>] [<view-file>]
+
+ARGUMENTS:
+  <view-file>             Path to a Swift file containing a GView or @Godot class
+
+OPTIONS:
+  --root <root>           Override the root type (GView or @Godot class)
+  --assets <assets>       Symlink asset directories into the Godot project (repeatable)
+  --include <include>     Copy .swift files from directory into sources (repeatable)
+  --godot <godot>         Path to Godot executable
+  --cache <cache>         Workspace cache directory
+  --builder-path <builder-path>
+                          Override the SwiftGodotBuilder dependency path
+  --builder-rev <builder-rev>
+                          SwiftGodotBuilder branch/tag/commit (default: main)
+  --swiftgodot-rev <swiftgodot-rev>
+                          SwiftGodot branch/tag/commit (default: main)
+  --project <project>     Use a custom project.godot file
+  --release               Build in release mode
+  --no-run                Do not launch Godot after building
+  --codesign              Codesign dylibs
+  --clean                 Delete cached playgrounds and exit
+  --verbose               Print extra logs and commands
+  --quiet                 Suppress informational logs
+  -h, --help              Show help information.
+```
+
+## Examples
+
 ```bash
 # Run a GView file
 swiftgodotbuilder MyView.swift

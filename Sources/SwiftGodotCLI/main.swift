@@ -8,25 +8,25 @@ struct SwiftGodotBuilderCLI: ParsableCommand {
     abstract: "Build and run SwiftGodotBuilder GView files"
   )
 
-  @Argument(help: "Path to a Swift file containing a GView or @Godot class")
+  @Argument(help: "Path to a Swift file containing a GView or @Godot class", completion: .file())
   var viewFile: String?
 
   @Option(name: .long, help: "Override the root type (GView or @Godot class)")
   var root: String?
 
-  @Option(name: .long, help: "Symlink asset directories into the Godot project (repeatable)")
+  @Option(name: .long, help: "Symlink asset directories into the Godot project (repeatable)", completion: .directory)
   var assets: [String] = []
 
-  @Option(name: .long, help: "Copy .swift files from directory into sources (repeatable)")
+  @Option(name: .long, help: "Copy .swift files from directory into sources (repeatable)", completion: .directory)
   var include: [String] = []
 
-  @Option(name: .long, help: "Path to Godot executable")
+  @Option(name: .long, help: "Path to Godot executable", completion: .file())
   var godot: String?
 
-  @Option(name: .long, help: "Workspace cache directory")
+  @Option(name: .long, help: "Workspace cache directory", completion: .directory)
   var cache: String?
 
-  @Option(name: .long, help: "Override the SwiftGodotBuilder dependency path")
+  @Option(name: .long, help: "Override the SwiftGodotBuilder dependency path", completion: .directory)
   var builderPath: String?
 
   @Option(name: .long, help: "SwiftGodotBuilder branch/tag/commit (default: main)")
@@ -35,7 +35,7 @@ struct SwiftGodotBuilderCLI: ParsableCommand {
   @Option(name: .long, help: "SwiftGodot branch/tag/commit (default: main)")
   var swiftgodotRev: String?
 
-  @Option(name: .long, help: "Use a custom project.godot file")
+  @Option(name: .long, help: "Use a custom project.godot file", completion: .file())
   var project: String?
 
   @Flag(name: .long, help: "Build in release mode")
