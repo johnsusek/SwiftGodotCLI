@@ -6,8 +6,9 @@ By default, pulls from the `main` branch of both [SwiftGodotBuilder](https://git
 
 ## Installation
 
+Download the latest release from the [releases page](https://github.com/johnsusek/SwiftGodotCLI/releases), or build from source:
+
 ```bash
-# Build from source
 git clone https://github.com/johnsusek/SwiftGodotCLI
 cd SwiftGodotCLI
 swift build -c release
@@ -73,26 +74,6 @@ swiftgodotbuilder MyGame.swift --builder-path ../SwiftGodotBuilder
 export SWIFTGODOTCLI_BUILDER_PATH=../SwiftGodotBuilder
 swiftgodotbuilder MyGame.swift
 ```
-
-## Options
-
-| Option | Description |
-|--------|-------------|
-| `--root <type>` | Override the root type (GView or @Godot class) |
-| `--assets <dir>` | Symlink asset directories into Godot project (repeatable) |
-| `--include <dir>` | Copy .swift files from directory into sources (repeatable) |
-| `--godot <path>` | Path to Godot executable |
-| `--cache <dir>` | Workspace cache directory |
-| `--builder-path <path>` | Override the SwiftGodotBuilder dependency path |
-| `--builder-rev <rev>` | SwiftGodotBuilder branch/tag/commit (default: main) |
-| `--swiftgodot-rev <rev>` | SwiftGodot branch/tag/commit (default: main) |
-| `--project <path>` | Use a custom project.godot file |
-| `--release` | Build in release mode |
-| `--no-run` | Do not launch Godot after building |
-| `--codesign` | Codesign dylibs |
-| `--clean` | Delete cached playgrounds and exit |
-| `--verbose` | Print extra logs |
-| `--quiet` | Suppress informational logs |
 
 ## Shell Completions
 
