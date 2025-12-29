@@ -1,8 +1,8 @@
 # SwiftGodotCLI
 
-CLI tool for building and running [SwiftGodotBuilder](https://github.com/johnsusek/SwiftGodotBuilder) GView files and SwiftGodot classes.
+CLI tool for building and running [SwiftGodot](https://github.com/migueldeicaza/SwiftGodot) projects. Also supports [SwiftGodotBuilder](https://github.com/johnsusek/SwiftGodotBuilder) GView files.
 
-By default, pulls from the `main` branch of both [SwiftGodotBuilder](https://github.com/johnsusek/SwiftGodotBuilder) and [SwiftGodot](https://github.com/migueldeicaza/SwiftGodot). Use `--builder-rev` and `--swiftgodot-rev` to pin specific branches, tags, or commits.
+By default, pulls from the `main` branch of [SwiftGodot](https://github.com/migueldeicaza/SwiftGodot) (and [SwiftGodotBuilder](https://github.com/johnsusek/SwiftGodotBuilder) when using GViews). Use `--swiftgodot-rev` and `--builder-rev` to pin specific branches, tags, or commits.
 
 ## Installation
 
@@ -18,15 +18,15 @@ cp .build/release/swiftgodotbuilder /usr/local/bin/
 ## Usage
 
 ```
-OVERVIEW: Build and run SwiftGodotBuilder GView files
+OVERVIEW: Build and run SwiftGodot files
 
-USAGE: swiftgodotbuilder [<options>] [<view-file>]
+USAGE: swiftgodotbuilder [<options>] [<swift-file>]
 
 ARGUMENTS:
-  <view-file>             Path to a Swift file containing a GView or @Godot class
+  <swift-file>            Path to a Swift file containing a @Godot class or GView
 
 OPTIONS:
-  --root <root>           Override the root type (GView or @Godot class)
+  --root <root>           Override the root type (@Godot class or GView)
   --assets <assets>       Symlink asset directories into the Godot project (repeatable)
   --include <include>     Copy .swift files from directory into sources (repeatable)
   --godot <godot>         Path to Godot executable
@@ -50,14 +50,14 @@ OPTIONS:
 ## Examples
 
 ```bash
-# Run a GView file
-swiftgodotbuilder MyView.swift
-
 # Run a @Godot class
 swiftgodotbuilder MyGame.swift
 
+# Run a GView file (SwiftGodotBuilder)
+swiftgodotbuilder MyView.swift
+
 # Specify which type to use as root
-swiftgodotbuilder MyFile.swift --root MyCustomView
+swiftgodotbuilder MyFile.swift --root MyCustomClass
 
 # Include assets
 swiftgodotbuilder MyGame.swift --assets ./sprites --assets ./sounds

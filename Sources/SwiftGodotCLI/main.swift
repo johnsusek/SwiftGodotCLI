@@ -5,13 +5,13 @@ import Foundation
 struct SwiftGodotBuilderCLI: ParsableCommand {
   static let configuration = CommandConfiguration(
     commandName: "swiftgodotbuilder",
-    abstract: "Build and run SwiftGodotBuilder GView files"
+    abstract: "Build and run SwiftGodot files"
   )
 
-  @Argument(help: "Path to a Swift file containing a GView or @Godot class", completion: .file())
+  @Argument(help: "Path to a Swift file containing a @Godot class or GView", completion: .file())
   var viewFile: String?
 
-  @Option(name: .long, help: "Override the root type (GView or @Godot class)")
+  @Option(name: .long, help: "Override the root type (@Godot class or GView)")
   var root: String?
 
   @Option(name: .long, help: "Symlink asset directories into the Godot project (repeatable)", completion: .directory)
@@ -61,7 +61,7 @@ struct SwiftGodotBuilderCLI: ParsableCommand {
       throw ValidationError("Cannot enable both --quiet and --verbose")
     }
     if !clean && viewFile == nil {
-      throw ValidationError("Missing expected argument '<view-file>'")
+      throw ValidationError("Missing expected argument '<swift-file>'")
     }
   }
 

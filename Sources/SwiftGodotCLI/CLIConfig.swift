@@ -67,7 +67,7 @@ struct CLIConfig {
       return (String(source[nameRange]), .godotClass)
     }
 
-    throw CLIError("Unable to detect a GView or @Godot class. Pass --root <TypeName> explicitly.")
+    throw CLIError("Unable to detect a @Godot class or GView. Pass --root <TypeName> explicitly.")
   }
 
   static func detectKind(for typeName: String, in source: String) -> ViewKind? {
