@@ -124,7 +124,7 @@ struct PlaygroundScaffold {
 
       #initSwiftExtension(
         cdecl: "swift_entry_point",
-        types: [\(rootClassName).self] + BuilderRegistry.types
+        types: ([\(rootClassName).self] + BuilderRegistry.types)
       )
 
       @Godot
@@ -142,7 +142,7 @@ struct PlaygroundScaffold {
 
       #initSwiftExtension(
         cdecl: "swift_entry_point",
-        types: [\(config.viewType).self] + BuilderRegistry.types
+        types: ([\(config.viewType).self] + BuilderRegistry.types)
       )
       """
     }
